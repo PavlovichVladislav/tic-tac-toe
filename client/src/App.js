@@ -1,22 +1,16 @@
-import { useRef } from 'react';
-import SockJsClient from 'sockjs-client';
-import { SOCKET_SERVER } from './constants';
-import './App.css';
+import "./App.css";
+import CloseButton from "./components/CloseButton";
+import ConnectionButton from "./components/ConnectionButton";
+import PingButton from "./components/PingButton";
 
 function App() {
-  const wsConn = useRef(new SockJsClient(SOCKET_SERVER));
-
-  const handleClick = () => {
-    if (wsConn.current && wsConn.current.readyState === 1) {
-      wsConn.current.send(JSON.stringify({type: 'ping'}))
-    }
-  }
-
-  return (
-    <div className="App">
-      <button onClick={handleClick}>ping</button>
-    </div>
-  );
+   return (
+      <div className="App">
+        <ConnectionButton/>
+        <PingButton/>
+        <CloseButton/>
+      </div>
+   );
 }
 
 export default App;
