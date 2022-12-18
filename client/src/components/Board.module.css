@@ -1,0 +1,32 @@
+.box {
+   margin-top: 1rem;
+}
+
+.clear {
+   display: block;
+   margin: 20px auto;
+   padding: 10px;
+   background: none;
+   font-size: 16px;
+   border: 3px solid orange;
+   border-radius: 5px;
+}
+
+.map {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   list-style: none;
+   width: min-content;
+}
+
+.cell {
+   display: block;
+   width: 28px;
+   height: 28px;
+   padding: 20px;
+   font-size: 24px;
+   font-family: "Consolas", monospace;
+   text-align: center;
+   border: 1px solid #333;
+   cursor: pointer;
+}

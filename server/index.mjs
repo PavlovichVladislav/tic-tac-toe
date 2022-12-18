@@ -1,41 +1,41 @@
 import { createServer } from "http";
 import { createServer as createSocketServer } from "sockjs";
+
 import { Board } from "./lib/board.mjs";
 
 const httpServer = createServer();
 const socketServer = createSocketServer();
 
-let poolClients = [];
+let poolOfClient = [];
 
 socketServer.on("connection", (connection) => {
-   poolClients = [...poolClients, connection];
+   poolOfClient = [...poolOfClient, connection];
 
    connection.on("close", () => {
-      poolClients = poolClients.filter((clinet) => clinet !== connection);
+      poolOfClient = poolOfClient.filter((c) => c !== connection);
    });
 
    connection.on("data", (msg) => {
       try {
-         const parseData = JSON.parse(msg);
-         switch (parseData.type) {
+         const parsedData = JSON.parse(msg);
+         switch (parsedData.type) {
             case "ping":
                handlePing(connection);
                break;
             case "firstStep":
-               handleFirstStep(connection, parseData.payload);
+               handleFirstStep(connection, parsedData.payload);
                break;
             case "step":
-               handleStep(connection, parseData.payload);
+               handleStep(connection, parsedData.payload);
                break;
             case "clearBoard":
-               handleClearBoard();
+               handleClear();
                break;
             case "getBoardState":
                handleGetBoardState(connection);
                break;
             default:
                handleDefault(connection);
-               break;
          }
       } catch (e) {
          console.log(e);
@@ -52,7 +52,7 @@ function handlePing(connection) {
 }
 
 function handleDefault(connection) {
-   connection.write(JSON.stringify({ type: "unknown type of message" }));
+   connection.write(JSON.stringify({ type: "UNKNOWN" }));
 }
 
 function handleFirstStep(connection, payload) {
@@ -60,19 +60,18 @@ function handleFirstStep(connection, payload) {
 
    const { result } = board?.firstStep(payload);
 
-   const boardState = board?.getGameState();
+   const boardStatus = board?.getCurrentGameState();
 
    if (result) {
-      const message = JSON.stringify({ 
-         type: "first step is happen",
-         payload: boardState,
+      const message = JSON.stringify({
+         type: "firstStepIsHappen",
+         payload: boardStatus,
       });
-
-      poolClients.forEach((connection) => connection.write(message));
+      poolOfClient.forEach((conn) => conn.write(message));
    } else {
       const message = JSON.stringify({
-         type: "step is failed",
-         payload: boardState,
+         type: "yourFirstStepIsFailed",
+         payload: boardStatus,
       });
       connection.write(message);
    }
@@ -83,40 +82,42 @@ function handleStep(connection, payload) {
 
    const { result } = board?.step(payload);
 
-   const boardState = board?.getGameState();
+   const boardStatus = board?.getCurrentGameState();
 
    if (result) {
       const message = JSON.stringify({
-         type: "step is happen",
-         payload: boardState,
+         type: "stepIsHappen",
+         payload: boardStatus,
       });
-
-      poolClients.forEach((connection) => connection.write(message));
+      poolOfClient.forEach((conn) => conn.write(message));
    } else {
       const message = JSON.stringify({
-         type: "step is failed",
-         payload: boardState,
+         type: "yourStepIsFailed",
+         payload: boardStatus,
       });
       connection.write(message);
    }
 }
 
-function handleClearBoard() {
+function handleClear() {
    const board = Board.getInstance();
 
    board?.clear();
 
    const message = JSON.stringify({
-      type: "map is cleared",
-      payload: board?.getGameState(),
+      type: "mapIsCleared",
+      payload: board?.getCurrentGameState(),
    });
-   poolClients.forEach((connection) => connection.write(message));
+   poolOfClient.forEach((conn) => conn.write(message));
 }
 
 function handleGetBoardState(connection) {
    const board = Board.getInstance();
 
    connection.write(
-      JSON.stringify({ type: "boardState", payload: board?.getGameState() })
+      JSON.stringify({
+         type: "boardState",
+         payload: board?.getCurrentGameState(),
+      })
    );
 }

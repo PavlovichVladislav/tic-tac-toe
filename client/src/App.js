@@ -2,14 +2,16 @@ import "./App.css";
 import CloseButton from "./components/CloseButton";
 import ConnectionButton from "./components/ConnectionButton";
 import PingButton from "./components/PingButton";
+import Board from "./components/Board";
 
 function App() {
    return (
-      <div className="App">
+      <>
         <ConnectionButton/>
         <PingButton/>
         <CloseButton/>
-      </div>
+        <Board/>
+      </>
    );
 }
 

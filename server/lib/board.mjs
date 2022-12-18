@@ -1,132 +1,103 @@
-// import {
-//    BEFORE_START,
-//    ZERO,
-//    EMPTY,
-//    CROSS,
-//    WINNER_COMBINATIONS,
-//    GAME_IS_RUNNING,
-// } from "../constants";
-
-export const BEFORE_START = "before_start";
-export const GAME_IS_RUNNING = "game_is_running";
-export const GAME_IS_END = "game_is_end";
-export const CROSS = "X";
-export const ZERO = "O";
-export const EMPTY = "None";
-export const WINNER_COMBINATIONS = [
-   [0, 1, 2],
-   [3, 4, 5],
-   [6, 7, 8],
-   [0, 3, 6],
-   [1, 4, 7],
-   [2, 5, 8],
-   [0, 4, 8],
-   [2, 4, 6],
-];
-
-function getClearBoard() {
+function getClearMap() {
    return [
-      "None",
-      "None",
-      "None",
-      "None",
-      "None",
-      "None",
-      "None",
-      "None",
-      "None",
-   ];
+       '', '', '',
+       '', '', '',
+       '', '', '',
+   ]
 }
 
+const WIN_COMBINATION = [
+   [0,1,2], [3,4,5], [6,7,8],
+   [0,3,6], [1,4,7], [2,5,8],
+   [0,4,8], [2,4,6]
+]
+
 function checkIsGameEnd(map) {
-   return WINNER_COMBINATIONS.some((combination) => {
-      combination.every((pos) => map[pos] === CROSS) ||
-         combination.every((pos) => map[pos] === ZERO);
-   });
+   return WIN_COMBINATION.some(combination => {
+       return combination.every(position => map[position] === 'X') ||
+       combination.every(position => map[position] === 'O')
+   })
 }
 
 export class Board {
    static instance;
-   map = getClearBoard();
+   map = getClearMap();
    steps = [];
-   status = BEFORE_START;
+   status = 'before_start';
 
-   constructor() {}
+   constructor() {
+   }
 
    static getInstance() {
-      if (!Board.instance) {
-         Board.instance = new Board();
-      }
+       if(!Board.instance) {
+           Board.instance = new Board();
+       }
 
-      return Board.instance;
+       return Board.instance
    }
 
-   getGameState() {
-      return { map: this.map, steps: this.steps, status: this.status };
+   getCurrentGameState() {
+       return { map: this.map, steps: this.steps, status: this.status }
    }
 
-   reset() {
-      this.status = BEFORE_START;
-      this.map = getClearBoard();
-      this.steps = [];
-   }
-
-   checkGameEnd() {
-      const isGameEnd = this.steps.length >= 5 && checkIsGameEnd(this.map);
-
-      if (isGameEnd) {
-         this.status = GAME_IS_END;
-      }
+   clear() {
+       this.status = 'before_start';
+       this.map = getClearMap();
+       this.steps = [];
    }
 
    firstStep(stepData) {
-      const isFieldCorrect = stepData.field >= 0 && stepData.field <= 8;
-      const isMapEmpty = this.map.every((f) => f === "None");
-      const isStepsLengthZero = this.steps.length === 0;
+       const isFieldCorrect = stepData.field >= 0 && stepData.field <= 8;
+       const isMapEmpty = this.map.every(f => f === '');
+       const isStepsLengthZero = this.steps.length === 0;
 
-      if (isFieldCorrect && isMapEmpty && isStepsLengthZero) {
-         const step = {
-            id: 0,
-            prevStepId: undefined,
-            field: stepData.field,
-         };
+       if (isStepsLengthZero && isMapEmpty && isFieldCorrect) {
+           const step = {
+               id: 0,
+               prevStepId: undefined,
+               field: stepData.field,
+           }
 
-         this.steps = [step];
-         this.map = this.map[stepData.field] = ZERO;
-         this.status = GAME_IS_RUNNING;
+           this.steps=[step]
+           this.map = [...this.map.slice(0, stepData.field), 'O', ...this.map.slice(stepData.field + 1)]
+           this.status = 'game'
 
-         return { result: true };
-      } else {
-         return { result: false };
-      }
+           return { result: true }
+       } else {
+           return { result: false }
+       }
    }
 
    step(stepData) {
-      const isProgession =
-         this.step.length > 0 &&
-         this.step.slice(-1)[0].id === stepData.prevStepId;
-      const isFieldCorrect =
-         stepData.field >= 0 &&
-         stepData.field <= 8 &&
-         this.map[stepData.field] === EMPTY;
-      const isGameRunning = this.status === GAME_IS_RUNNING;
+       const isProgression = this.steps.length > 0 && this.steps.slice(-1)[0].id === stepData.prevStepId;
+       const isFieldCorrect = stepData.field >= 0 && stepData.field <= 8 && this.map[stepData.field] === '';
+       const isGameStatusCorrect = this.status === 'game';
 
-      if (isProgession && isFieldCorrect && isGameRunning) {
-         const step = {
-            id: this.steps.length,
-            prevStepId: this.steps.length - 1,
-            field: stepData.field,
-         };
+       if(isProgression && isFieldCorrect && isGameStatusCorrect) {
+           const step = {
+               id: this.steps.length,
+               prevStepId: this.steps.length - 1,
+               field: stepData.field
+           }
 
-         this.steps = [...this.steps, step];
-         this.map = this.map[stepData.field] =
-            this.steps.length % 2 === 1 ? ZERO : CROSS;
+           const fieldData = this.steps.length % 2 === 1 ? 'X' : 'O';
 
-         this.checkGameEnd();
+           this.steps=[...this.steps, step]
+           this.map = [...this.map.slice(0, stepData.field), fieldData, ...this.map.slice(stepData.field + 1)]
 
-         return { result: true };
-      } else {
-         return { result: false };
-      }
+           this.checkGameEnd()
+
+           return { result: true }
+       } else {
+           return { result: false }
+       }
+   }
+
+   checkGameEnd() {
+       const isGameEnd = this.steps.length >= 5 && checkIsGameEnd(this.map);
+
+       if (isGameEnd) {
+           this.status = 'finished'
+       }
    }
 }
