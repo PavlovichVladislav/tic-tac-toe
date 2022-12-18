@@ -1,11 +1,28 @@
-import {
-   BEFORE_START,
-   ZERO,
-   EMPTY,
-   CROSS,
-   WINNER_COMBINATIONS,
-   GAME_IS_RUNNING,
-} from "./constants";
+// import {
+//    BEFORE_START,
+//    ZERO,
+//    EMPTY,
+//    CROSS,
+//    WINNER_COMBINATIONS,
+//    GAME_IS_RUNNING,
+// } from "../constants";
+
+export const BEFORE_START = "before_start";
+export const GAME_IS_RUNNING = "game_is_running";
+export const GAME_IS_END = "game_is_end";
+export const CROSS = "X";
+export const ZERO = "O";
+export const EMPTY = "None";
+export const WINNER_COMBINATIONS = [
+   [0, 1, 2],
+   [3, 4, 5],
+   [6, 7, 8],
+   [0, 3, 6],
+   [1, 4, 7],
+   [2, 5, 8],
+   [0, 4, 8],
+   [2, 4, 6],
+];
 
 function getClearBoard() {
    return [
@@ -21,12 +38,6 @@ function getClearBoard() {
    ];
 }
 
-// steps:
-// first: {id: number, prevStepId: undefined, field: number}
-// step: {id: number, prevStepId: number, field: number}
-
-// status: 'before_start', 'game', 'finished'
-
 function checkIsGameEnd(map) {
    return WINNER_COMBINATIONS.some((combination) => {
       combination.every((pos) => map[pos] === CROSS) ||
@@ -34,9 +45,9 @@ function checkIsGameEnd(map) {
    });
 }
 
-class Board {
+export class Board {
    static instance;
-   map = getClearBoard;
+   map = getClearBoard();
    steps = [];
    status = BEFORE_START;
 
