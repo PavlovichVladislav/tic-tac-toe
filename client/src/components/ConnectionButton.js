@@ -1,14 +1,14 @@
-import React, { useRef } from "react";
-import { WS } from "../api/ws";
+import React from "react";
+import { useWS } from "../hooks/useWS.js";
 
 const ConnectionButton = () => {
-   const ws = useRef(WS.getInstance());
+   const {ws, isWs} = useWS();
 
    function handleClick() {
-      ws.current.connect();
+      ws?.connect();
    }
 
-   return <button onClick={handleClick}>Connect</button>;
+   return <button onClick={handleClick} disabled={isWs}>Connect</button>;
 };
 
 export default ConnectionButton;

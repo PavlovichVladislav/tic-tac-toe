@@ -1,14 +1,14 @@
-import React, { useRef } from "react";
-import { WS } from "../api/ws";
+import React from "react";
+import { useWS } from "../hooks/useWS.js";
 
 const CloseButton = () => {
-   const ws = useRef(WS.getInstance());
+   const {ws, isWs} = useWS()
 
    function handleClick() {
-      ws.current.close();
+      ws?.close();
    }
 
-   return <button onClick={handleClick}>Close</button>;
+   return <button onClick={handleClick} disabled={!isWs} >Close</button>;
 };
 
 export default CloseButton;
