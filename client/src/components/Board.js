@@ -1,14 +1,18 @@
 import styles from "./Board.module.css";
+import ConnectionButton from "./ConnectionButton";
+import CloseButton from "./CloseButton";
 
 import { useBoard } from "../hooks/useBoard";
 
 export function Board() {
    const { map, handleClear, handleStep } = useBoard();
-   
+
    return (
-      <>
+      <div>
          <div className={styles.control}>
-            <button className={styles.clear} onClick={handleClear}>
+            <ConnectionButton />
+            <CloseButton />
+            <button className={styles.btn} onClick={handleClear}>
                Clear
             </button>
          </div>
@@ -26,7 +30,7 @@ export function Board() {
                   ))}
             </ul>
          </div>
-      </>
+      </div>
    );
 }
 

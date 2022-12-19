@@ -15,7 +15,6 @@ export function useBoard() {
          try {
             const parsedData = JSON.parse(ev.data);
 
-            console.log(parsedData);
             if (parsedData.payload?.map) {
                setMap(() => parsedData.payload.map);
             }

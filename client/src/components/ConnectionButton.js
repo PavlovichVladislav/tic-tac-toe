@@ -1,5 +1,6 @@
 import React from "react";
 import { useWS } from "../hooks/useWS.js";
+import styles from "./Board.module.css";
 
 const ConnectionButton = () => {
    const {ws, isWs} = useWS();
@@ -8,7 +9,7 @@ const ConnectionButton = () => {
       ws?.connect();
    }
 
-   return <button onClick={handleClick} disabled={isWs}>Connect</button>;
+   return <button onClick={handleClick} disabled={isWs} className={styles.btn}>Connect</button>;
 };
 
 export default ConnectionButton;

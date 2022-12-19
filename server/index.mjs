@@ -1,27 +1,24 @@
 import { createServer } from "http";
 import { createServer as createSocketServer } from "sockjs";
 
-import { Board } from "./lib/board.mjs";
+import { Board } from "./board.mjs";
 
 const httpServer = createServer();
 const socketServer = createSocketServer();
 
-let poolOfClient = [];
+let poolClient = [];
 
 socketServer.on("connection", (connection) => {
-   poolOfClient = [...poolOfClient, connection];
+   poolClient = [...poolClient, connection];
 
    connection.on("close", () => {
-      poolOfClient = poolOfClient.filter((c) => c !== connection);
+      poolClient = poolClient.filter((c) => c !== connection);
    });
 
    connection.on("data", (msg) => {
       try {
          const parsedData = JSON.parse(msg);
          switch (parsedData.type) {
-            case "ping":
-               handlePing(connection);
-               break;
             case "firstStep":
                handleFirstStep(connection, parsedData.payload);
                break;
@@ -47,10 +44,6 @@ socketServer.installHandlers(httpServer);
 
 httpServer.listen(5000);
 
-function handlePing(connection) {
-   connection.write(JSON.stringify({ type: "pong" }));
-}
-
 function handleDefault(connection) {
    connection.write(JSON.stringify({ type: "UNKNOWN" }));
 }
@@ -64,13 +57,13 @@ function handleFirstStep(connection, payload) {
 
    if (result) {
       const message = JSON.stringify({
-         type: "firstStepIsHappen",
+         type: "first step is happen",
          payload: boardStatus,
       });
-      poolOfClient.forEach((conn) => conn.write(message));
+      poolClient.forEach((conn) => conn.write(message));
    } else {
       const message = JSON.stringify({
-         type: "yourFirstStepIsFailed",
+         type: "first step is failed",
          payload: boardStatus,
       });
       connection.write(message);
@@ -86,13 +79,13 @@ function handleStep(connection, payload) {
 
    if (result) {
       const message = JSON.stringify({
-         type: "stepIsHappen",
+         type: "step is happen",
          payload: boardStatus,
       });
-      poolOfClient.forEach((conn) => conn.write(message));
+      poolClient.forEach((conn) => conn.write(message));
    } else {
       const message = JSON.stringify({
-         type: "yourStepIsFailed",
+         type: "step is failed",
          payload: boardStatus,
       });
       connection.write(message);
@@ -105,10 +98,11 @@ function handleClear() {
    board?.clear();
 
    const message = JSON.stringify({
-      type: "mapIsCleared",
+      type: "map is cleared",
       payload: board?.getCurrentGameState(),
    });
-   poolOfClient.forEach((conn) => conn.write(message));
+
+   poolClient.forEach((connection) => connection.write(message));
 }
 
 function handleGetBoardState(connection) {
@@ -116,7 +110,7 @@ function handleGetBoardState(connection) {
 
    connection.write(
       JSON.stringify({
-         type: "boardState",
+         type: "board state",
          payload: board?.getCurrentGameState(),
       })
    );
